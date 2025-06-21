@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Padrões - Crash Blaze</title>
+  <!-- Importando fonte moderna -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Vídeo de fundo que cobre toda a tela */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    
+    /* Variáveis de cores */
+    :root {
+      --primary-green: #28a745;
+      --primary-gray: #6c757d;
+      --background: #f7f9fc;
+      --card-bg: #f0f0f0; /* Tom um pouco mais escuro para o painel */
+      --shadow: rgba(0, 0, 0, 0.1);
+      --text-color: #333;
+      --accent: #007bff;
+    }
+    
+    /* Reset e fonte global */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background: none;
+      color: var(--text-color);
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 30px;
+      margin: 20px auto;
+      box-shadow: 0 8px 16px var(--shadow);
+      position: relative;
+      z-index: 1;
+    }
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--accent);
+    }
+    
+    .history-container {
+      margin-bottom: 20px;
+    }
+    
+    /* Campo de histórico */
+    #history {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 1.1em;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      background-color: #fafafa;
+      overflow-x: auto;
+      transition: border 0.3s;
+    }
+    #history:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .btn {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px 0;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: 600;
+    }
+    .green-btn {
+      background-color: var(--primary-green);
+      color: #fff;
+    }
+    .gray-btn {
+      background-color: var(--primary-gray);
+      color: #fff;
+    }
+    .btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .pattern-length-container {
+      margin-bottom: 20px;
+    }
+    .pattern-length-container label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+      font-weight: 600;
+      text-align: center;
+    }
+    .pattern-length-container input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1em;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      transition: border 0.3s;
+    }
+    .pattern-length-container input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .patterns-container {
+      margin-top: 20px;
+    }
+    #patternsList {
+      list-style: none;
+      margin-top: 15px;
+    }
+    #patternsList li {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    #patternsList li div {
+      margin-top: 5px;
+    }
+    #patternsList li div:first-child {
+      margin-top: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 480px) {
+      .btn {
+        font-size: 1em;
+        padding: 10px 0;
+      }
+    }
+    
+    /* Notificação */
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: var(--accent);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 1000;
+      display: none;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <!-- Vídeo de fundo cobrindo toda a tela -->
+  <video autoplay loop muted id="bg-video">
+    <source src="https://cdn.pixabay.com/video/2024/05/05/210743_large.mp4" type="video/mp4">
+    Seu navegador não suporta o elemento de vídeo.
+  </video>
+  
+  <div class="container">
+    <div class="history-container">
+      <input type="text" id="history" placeholder="Histórico de Jogadas">
+    </div>
+    <div class="buttons-container">
+      <button id="greenBtn" class="btn green-btn"><strong>2.00 x</strong></button>
+      <button id="grayBtn" class="btn gray-btn"><strong>1,99 x</strong></button>
+    </div>
+    <div class="pattern-length-container">
+      <label for="patternLengthInput">Quantidade de cores do padrão (4 a 20):</label>
+      <input type="number" id="patternLengthInput" min="4" max="20" value="6">
+    </div>
+    <div class="patterns-container">
+      <h2>Padrões mais frequentes</h2>
+      <ul id="patternsList"></ul>
+    </div>
+  </div>
+  
+  <div id="notification"></div>
+  
+  <script>
+    let historyResults = [];
+    let PATTERN_LENGTH = parseInt(document.getElementById("patternLengthInput").value) || 6;
+    let lastNotifiedPattern = null;
+    let notificationTimeout;
+    
+    function renderHistory() {
+      const historyInput = document.getElementById("history");
+      historyInput.value = historyResults.join(',');
+      historyInput.scrollLeft = historyInput.scrollWidth;
+    }
+    
+    /* 
+      Lógica de cálculo:
+      Para cada ocorrência do padrão (definido por PATTERN_LENGTH),
+      verifica-se as próximas 2 rodadas (após o padrão).
+      Se ambas forem ⚫, conta 1 para a estratégia de ⚫.
+      Se houver pelo menos um 🟢, conta 1 para a estratégia de 🟢.
+    */
+    function updatePatterns() {
+      let patternData = {};
+      for (let i = 0; i <= historyResults.length - PATTERN_LENGTH - 2; i++) {
+        let patternArr = historyResults.slice(i, i + PATTERN_LENGTH);
+        let pattern = patternArr.join(',');
+        let nextOutcomes = historyResults.slice(i + PATTERN_LENGTH, i + PATTERN_LENGTH + 2);
+        if (nextOutcomes.length < 2) continue;
+        let signalType;
+        if (nextOutcomes[0] === "⚫" && nextOutcomes[1] === "⚫") {
+          signalType = "black";
+        } else if (nextOutcomes[0] === "🟢" || nextOutcomes[1] === "🟢") {
+          signalType = "green";
+        } else {
+          signalType = "black";
+        }
+        if (!patternData[pattern]) {
+          patternData[pattern] = { occurrence: 0, greenCount: 0, blackCount: 0 };
+        }
+        patternData[pattern].occurrence += 1;
+        if (signalType === "green") {
+          patternData[pattern].greenCount += 1;
+        } else {
+          patternData[pattern].blackCount += 1;
+        }
+      }
+      
+      let patternsArray = Object.entries(patternData);
+      patternsArray.sort((a, b) => b[1].occurrence - a[1].occurrence);
+      patternsArray = patternsArray.slice(0, 17);
+      
+      const patternsList = document.getElementById("patternsList");
+      patternsList.innerHTML = '';
+      patternsArray.forEach(([pattern, data], index) => {
+        let greenPercentage = ((data.greenCount / data.occurrence) * 100).toFixed(2);
+        let blackPercentage = ((data.blackCount / data.occurrence) * 100).toFixed(2);
+        const li = document.createElement("li");
+        li.id = "pattern-" + (index + 1);
+        li.innerHTML = `
+          <div><strong>PADRÃO ${index + 1}:</strong> ${pattern}</div>
+          <div style="margin-top: 5px;"><strong>PROBABILIDADE (🟢):</strong> ${greenPercentage}%</div>
+          <div style="margin-top: 5px;"><strong>PROBABILIDADE (⚫):</strong> ${blackPercentage}%</div>
+          <div style="margin-top: 5px;"><strong>TOTAL =</strong> ${data.occurrence}</div>
+        `;
+        patternsList.appendChild(li);
+      });
+      
+      // Notifica somente se houver pelo menos 100 cores inseridas
+      // e se as últimas PATTERN_LENGTH cores formam um padrão exato dentre os top 17
+      if (historyResults.length >= 100 && historyResults.length >= PATTERN_LENGTH) {
+        const currentPattern = historyResults.slice(historyResults.length - PATTERN_LENGTH, historyResults.length).join(',');
+        const foundIndex = patternsArray.findIndex(item => item[0] === currentPattern);
+        if (foundIndex !== -1 && currentPattern !== lastNotifiedPattern) {
+          showNotification(foundIndex + 1);
+          lastNotifiedPattern = currentPattern;
+        }
+      }
+    }
+    
+    function updateAll() {
+      updatePatterns();
+    }
+    
+    function parseHistoryField() {
+      const content = document.getElementById("history").value;
+      const parsed = content.split(',')
+        .map(item => item.trim())
+        .filter(item => item === "🟢" || item === "⚫");
+      historyResults = parsed;
+      updateAll();
+    }
+    
+    document.getElementById("history").addEventListener("input", parseHistoryField);
+    document.getElementById("history").addEventListener("blur", renderHistory);
+    
+    document.getElementById("patternLengthInput").addEventListener("change", function() {
+      let newValue = parseInt(this.value);
+      if (isNaN(newValue) || newValue < 4) newValue = 4;
+      else if (newValue > 20) newValue = 20;
+      PATTERN_LENGTH = newValue;
+      updateAll();
+    });
+    
+    document.getElementById("greenBtn").addEventListener("click", function() {
+      historyResults.push("🟢");
+      renderHistory();
+      updateAll();
+    });
+    
+    document.getElementById("grayBtn").addEventListener("click", function() {
+      historyResults.push("⚫");
+      renderHistory();
+      updateAll();
+    });
+    
+    function showNotification(patternRank) {
+      const notification = document.getElementById("notification");
+      notification.innerHTML = `<div>IDENTIFICAMOS UM PADRÃO</div><div>PADRÃO ${patternRank}</div>`;
+      notification.style.display = "block";
+      if (notificationTimeout) clearTimeout(notificationTimeout);
+      notificationTimeout = setTimeout(() => {
+        notification.style.display = "none";
+      }, 15000);
+      
+      notification.onclick = function() {
+        const target = document.getElementById("pattern-" + patternRank);
+        if(target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        notification.style.display = "none";
+      };
+    }
+    
+    /*  
+      Fontes e referências:
+      - Google Fonts (Poppins): https://fonts.google.com/specimen/Poppins
+      - MDN Web Docs - Element.scrollLeft: https://developer.mozilla.org/pt-BR/docs/Web/API/Element/scrollLeft
+      - CSS Transitions e Animations: https://developer.mozilla.org/pt-BR/docs/Web/CSS
+      - Responsive Design: https://developer.mozilla.org/pt-BR/docs/Learn/CSS/CSS_layout/Responsive_Design
+    */
+  </script>
+</body>
+</html>
